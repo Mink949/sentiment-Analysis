@@ -1,0 +1,46 @@
+{
+  "SEED": 42,
+  "MODEL_NAME": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+  "MAX_LEN": 128,
+  "EMBED_BATCH_SIZE": 64,
+  "BATCH_TRAIN": 16,
+  "BATCH_EVAL": 32,
+  "ROBERTA_DIM": 768,
+  "TOPIC_EMB_DIM": 32,
+  "DROPOUT_RATE": 0.4,
+  "NUM_TOPICS": 12,
+  "NUM_CLASSES": 3,
+  "main_model_epochs_cap": 30,
+  "main_model_early_stopping_patience": 5,
+  "ablation_variants": [
+    "full",
+    "no_topic",
+    "no_skip",
+    "no_bn"
+  ],
+  "ablation_epoch_budgets": [
+    15,
+    30
+  ],
+  "ablation_n_seeds": 5,
+  "ablation_patience_by_epochs": {
+    "15": 4,
+    "30": 5
+  },
+  "GROQ_MODEL": "llama-3.1-8b-instant",
+  "counterfactual_n_samples": 200,
+  "counterfactual_k_values": [
+    1,
+    2,
+    3,
+    5
+  ],
+  "counterfactual_conditions": [
+    "top_lime",
+    "low_lime",
+    "random"
+  ],
+  "trainable_params": 832163,
+  "filtered_deduped_rows": 21468,
+  "filtered_ids_file": "./artifacts/filtered_ids.csv"
+}
