@@ -53,16 +53,17 @@ This project classifies tweet sentiment across **3 classes** — `Positive`, `Ne
 
 | Sentiment | Count | Share |
 |-----------|-------|-------|
-| Neutral | 9,153 | 33.0% |
-| Negative | 8,282 | 29.9% |
-| Positive | 6,423 | 23.2% |
-| Irrelevant | 3,851 | 13.9% |
+| Neutral | 9945 | 19.6% |
+| Negative | 18785 | 37.0% |
+| Positive | 18241 | 35.9% |
+| Irrelevant | 3,851 | 7.6%% |
 
 **Topic distribution (12 topics):**
 
 | Topic | Count | Topic | Count |
 |-------|-------|-------|-------|
-| Game | 2,431 | Xbox (Xseries) | 2,360 |
+| hotel | 23113 |
+| League Of Legends | 2,431 | Xbox (Xseries) | 2,360 |
 | Microsoft | 2,428 | Amazon | 2,350 |
 | Verizon | 2,414 | PlayStation 5 (PS5) | 2,343 |
 | Facebook | 2,403 | Nvidia | 2,333 |
