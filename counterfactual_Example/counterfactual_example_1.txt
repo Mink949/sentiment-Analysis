@@ -1,0 +1,15 @@
+📌 EXPLANATION
+
+The model predicted **Negative** (confidence: 68.8%) for:
+  \"Another patch, another broken champion ruining ranked. The balance team actually has no idea what they are doing. Vanguard keeps crashing my PC and cost me 50 LP today. Im so done with this game 🤬 #LeagueOfLegends"
+
+🔍 LIME — Words pushing TOWARD 'Negative': 'champion' (+0.0425), 'today' (+0.0368), 'pc' (+0.0355)
+🔍 LIME — Words pushing AWAY from 'Negative': 'crashing' (-0.0704), 'another' (-0.0639), 'ruining' (-0.0614)
+
+🤖 Ollama Counterfactual Generation:
+   Status: success
+
+✅ By modifying the tweet, the sentiment flips to **Positive** (confidence: 63.1%).
+
+Counterfactual tweet:
+  \"Today's patch is amazing, champion balance is spot on. Vanguard is running smoothly on my PC and earned me 50 LP. I'm loving this game #LeagueOfLegends"

@@ -28,6 +28,7 @@ This project classifies tweet sentiment across **3 classes** — `Positive`, `Ne
 - **Text preprocessing** — URL/mention/hashtag removal, contraction expansion, lowercasing, plus a duplicate check and a lighter cleaning variant used for a delta comparison
 - **RoBERTa embeddings** — mean-pooled 768-dim vectors from `cardiffnlp/twitter-roberta-base-sentiment-latest` (PyTorch, frozen during classification head training)
 - **Dual-input Keras head** — fuses text embeddings with a 32-dim learned topic embedding (12 topics), includes BatchNormalization and a skip connection
+- **Auto topic prediction, end-to-end** — a Logistic Regression topic classifier (trained on the same RoBERTa embeddings) predicts each tweet's topic *before* the main model is even built. The main model is trained and evaluated on this **predicted** topic, not the dataset's ground-truth `topic` column, so training input matches real inference — `predict_sentiment(text)` also predicts the topic first, then feeds it into the sentiment head
 - **Baseline comparison (Table 3)** — zero-shot RoBERTa head, TF-IDF + Logistic Regression, TF-IDF + topic one-hot + Logistic Regression, and RoBERTa embeddings + Logistic Regression, all measured on the same test split
 - **Ablation study** — the full head trained with the topic branch, skip connection, or BatchNorm removed one at a time, each at 2 epoch budgets × 5 seeds, reported as mean ± std
 - **LIME explainability** — token-level attribution via a full re-embedding perturbation wrapper, explained on the exact cleaned string the model receives
@@ -83,13 +84,14 @@ The split is stratified on `sentiment_encoded` with `random_state=SEED`, and is 
 | 1 | Data Loading & EDA — distribution plots, null checks, sample inspection |
 | 2 | Text Preprocessing & Label Encoding — cleaning, duplicate check + removal, a light-cleaning variant, `Irrelevant` removal, 70/15/15 stratified split (with raw text carried through for later steps) |
 | 3 | RoBERTa Embedding Extraction & TF Dataset — mean-pooled 768-dim embeddings via PyTorch |
+| 3.5 | Topic Classifier — Logistic Regression on the RoBERTa embeddings predicts topic from text alone; its **predicted** topic (not the ground-truth `topic` column) is what feeds the Step 3.4 TF Datasets, the main model, and Baseline C below |
 | 4 | Model Architecture — dual-input Keras head with skip connection and BatchNorm, plus a parameter/seed summary |
-| 5 | Training — class-weighted loss, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint |
+| 5 | Training — class-weighted loss, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint (topic input is the Step 3.5 prediction) |
 | 6 | Evaluation — classification report, confusion matrix, training loss/accuracy curves |
-| 6.5 | Baseline Comparison (Table 3) — zero-shot RoBERTa head, TF-IDF+LR, TF-IDF+topic+LR, RoBERTa-embeddings+LR, and a light-cleaning delta, all vs. the main model |
+| 6.5 | Baseline Comparison (Table 3) — zero-shot RoBERTa head, TF-IDF+LR, TF-IDF+predicted-topic+LR, RoBERTa-embeddings+LR, and a light-cleaning delta, all vs. the main model |
 | 6.6 | Ablation Study — full head vs. no-topic / no-skip / no-BatchNorm variants, 2 epoch budgets × 5 seeds, mean ± std |
-| 7 | Inference Demo — single-tweet end-to-end prediction |
-| 8 | LIME Explainability — token attribution with full RoBERTa re-embedding per perturbation, explained on the model's actual cleaned input |
+| 7 | Inference Demo — single-tweet end-to-end prediction; topic is auto-predicted (Step 3.5), then fed into the sentiment head |
+| 8 | LIME Explainability — token attribution with full RoBERTa re-embedding per perturbation, explained on the model's actual cleaned input, with the topic auto-predicted once and held fixed across perturbations |
 | 9 | Counterfactual Generation — Groq API rewrite of one demo tweet, guided by LIME word weights, with a side-by-side probability delta comparison |
 | 10 | Reproducibility Artifacts Export — filtered/deduplicated id list, run configuration, and Groq prompt template saved to `./artifacts/` |
 
@@ -128,6 +130,20 @@ pip install numpy pandas matplotlib seaborn contractions scipy \
 > Make sure TensorFlow and PyTorch versions are compatible with your system.
 > If using a GPU, verify your CUDA drivers match the installed `torch` version.
 > `scipy` is required directly for `scipy.sparse.hstack` used in Baseline C (Step 6.5).
+
+---
+
+## Topic Prediction Feeds the Main Model (not the ground-truth label)
+
+An earlier version of this pipeline fed the dataset's ground-truth `topic` column directly into the
+main model's `topic_id` input — both during training and at inference. That's unrealistic: a
+deployed model doesn't get a hand-labeled topic for free. Step 3.5 now trains a topic classifier
+*before* the main model exists, and its **predictions** (`topic_train_pred` / `topic_val_pred` /
+`topic_test_pred`) — not `topic_train` / `topic_val` / `topic_test` — are what populate the Step 3.4
+TF Datasets that Step 4's model and the Step 6.6 ablation sweep both train on. Baseline C (Step 6.5)
+was updated the same way, so it stays a fair "same input as the main model" comparison. The
+ground-truth `topic_train`/`topic_val`/`topic_test` arrays still exist (from the Step 2.4 split) and
+are only used to *fit and score* the Step 3.5 classifier — nothing downstream sees them again.
 
 ---
 
@@ -189,6 +205,7 @@ topic_id (1,) ──► Embedding(13, 32) ──► Flatten ──────�
 - **Class balancing**: `compute_class_weight('balanced')` passed to `model.fit(class_weight=...)`
 - **Callbacks**: built by `make_callbacks(patience, checkpoint_path)` — `EarlyStopping(restore_best_weights=True)`, `ReduceLROnPlateau(factor=0.5, patience=3, min_lr=1e-6)`, `ModelCheckpoint(save_weights_only=True)`. The full model uses `patience=5`; the Step 6.6 ablation runs use `patience=4` at the 15-epoch budget and `patience=5` at the 30-epoch budget.
 - **Ablation variants** (`build_model_ablation()`, Step 6.6): `no_topic` zero-gates the topic embedding's contribution before fusion (kept in the graph so the model signature is unchanged, but it carries no signal and gets no gradient); `no_skip` drops the `Concat(256 + fused)` skip connection; `no_bn` removes every `BatchNormalization` layer.
+- **`topic_id` is a prediction, not a label**: the diagram's `topic_id` input comes from the Step 3.5 topic classifier both during training (`topic_train_pred`/`topic_val_pred`/`topic_test_pred` populate the Step 3.4 TF Datasets) and at inference. `predict_sentiment(text, topic_str=None)` (Step 7) extracts the tweet's RoBERTa embedding once, feeds it to the Step 3.5 classifier to get `topic_id`, and only then runs the sentiment head — `topic_str` can still be passed explicitly to override the auto-prediction (e.g. to check how much the model relies on topic-classifier noise vs. a clean label).
 
 ---
 
