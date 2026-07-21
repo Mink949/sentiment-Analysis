@@ -1,7 +1,7 @@
 model,accuracy,macro_f1,notes
-Main model (RoBERTa emb + topic + BN + skip head),0.8858255918489661,0.8744822634732894,"trained head, Step 4-6"
-B: TF-IDF + LogisticRegression,0.8697932274498053,0.860501874191207,vocab=20000
-E: TF-IDF (light cleaning) + LogisticRegression,0.8697932274498053,0.8599876964804424,keeps digits & hashtag words
-C: TF-IDF + topic one-hot + LogisticRegression,0.8661971830985915,0.8564566376469402,"same (text, predicted-topic) input as the main model"
-D: RoBERTa embeddings + LogisticRegression,0.8266406952352412,0.8075614774885449,StandardScaler + max_iter=2000 to ensure convergence
+Main model (RoBERTa emb + topic + BN + skip head),0.8787833383278394,0.8660458236430183,"trained head, Step 4-6"
+B: TF-IDF + LogisticRegression,0.8688942163620018,0.859768901189134,vocab=20000
+E: TF-IDF (light cleaning) + LogisticRegression,0.8690440515433023,0.8594206290184858,keeps digits & hashtag words
+C: TF-IDF + topic one-hot + LogisticRegression,0.8648486664668864,0.8551220677087156,"same (text, predicted-topic) input as the main model"
+D: RoBERTa embeddings + LogisticRegression,0.8269403655978423,0.8078668638427096,StandardScaler + max_iter=2000 to ensure convergence
 A: Zero-shot RoBERTa head,0.6778543602037759,0.6394757262725642,"no training, model's own head"
