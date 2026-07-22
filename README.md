@@ -122,7 +122,7 @@ The final 44,396 ids are the ones actually used for the train/val/test split, sa
 ```
 .
 ├── sentiment_analysis_pipeline.ipynb   # Main notebook — full pipeline
-├── merged_twitter_sentiment.xlsx       # Raw dataset (50,822 rows, 4 columns) — export to .csv before running
+├── merged_twitter_sentiment.csv       # Raw dataset (50,822 rows, 4 columns)
 ├── eda_distribution.png                # Sentiment & topic distribution bar charts
 ├── best_model/
 │   └── model.weights.h5               # Best checkpoint saved by ModelCheckpoint
