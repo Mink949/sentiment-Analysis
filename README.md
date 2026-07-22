@@ -171,10 +171,9 @@ are only used to *fit and score* the Step 3.4 classifier — nothing downstream 
 
 ## How to Run
 
-1. Export `merged_twitter_sentiment.xlsx` to `merged_twitter_sentiment.csv` (the notebook calls `pd.read_csv('merged_twitter_sentiment.csv')` — a plain `pd.read_excel(...).to_csv(...)` one-liner is enough) and place it in the same directory as the notebook.
-2. Open `sentiment_analysis_pipeline.ipynb` in Jupyter or VS Code.
-3. Run all cells top to bottom.
-4. When prompted in Step 9, enter your Groq API key (only needed for the single-tweet counterfactual demo — no large batch of API calls is made).
+1. Open `sentiment_analysis_pipeline.ipynb` in Jupyter or VS Code.
+2. Run all cells top to bottom.
+3. When prompted in Step 9, enter your Groq API key (only needed for the single-tweet counterfactual demo — no large batch of API calls is made).
 
 Embedding extraction (Step 3) is the most time-consuming step. Step 6.6 (ablation study) is the second most expensive — it trains 40 head-only models (4 variants × 2 epoch budgets × 5 seeds) on the *cached* embeddings, so it doesn't re-run RoBERTa but is still the longest-running cell in the notebook; reduce `N_SEEDS` in that cell for a quick smoke test. To skip Step 3 entirely on re-runs, see [Suggested Improvements](#suggested-improvements).
 
