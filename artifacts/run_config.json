@@ -29,6 +29,6 @@
   },
   "GROQ_MODEL": "llama-3.1-8b-instant",
   "trainable_params": 832195,
-  "filtered_deduped_rows": 44493,
+  "filtered_deduped_rows": 44396,
   "filtered_ids_file": "./artifacts/filtered_ids.csv"
 }
